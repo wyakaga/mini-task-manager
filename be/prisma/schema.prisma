@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  deletedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  auditLogs   AuditLog[]
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  PENDING
+  IN_PROGRESS
+  DONE
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  taskId     String
+  actor      String
+  fromStatus String
+  toStatus   String
+  timestamp  DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("audit_logs")
+}
